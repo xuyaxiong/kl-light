@@ -11,7 +11,7 @@
     "build": "tsup",
     "test": "jest"
   },
-  "author": "",
+  "author": "xuyax",
   "license": "ISC",
   "description": "考拉悠然光源控制",
   "devDependencies": {
@@ -19,5 +19,20 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.2.2",
     "tsup": "^8.1.0"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xuyaxiong/kl-light.git"
+  },
+  "keywords": [
+    "光源控制"
+  ],
+  "bugs": {
+    "url": "https://github.com/xuyaxiong/kl-light/issues"
+  },
+  "homepage": "https://github.com/xuyaxiong/kl-light#readme"
 }
