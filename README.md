@@ -1,6 +1,52 @@
 # 考拉悠然光源控制
 
-### 1. 用法
+### 1. 关键数据结构
+```typescript
+interface LightConfig {
+  ip: string; // 光源IP地址
+  port: number; // 端口号
+  mask: string; // 子网掩码
+  channel: number; // 通道
+  name: string; // 自定义名称
+  id: number; // 自定义id
+}
+
+interface LightPropDTO {
+  ip: string;
+  port: number;
+  mask: string;
+  channel: number;
+  name: string;
+  id: number;
+  L: number; // 当前亮度
+  T: number; // 当前发光时间
+  F: number; // 通道开关 ON：1 OFF：0
+}
+```
+
+### 2. API
++ 获取光源列表
+```typescript
+public async getLightList(): Promise<LightPropDTO[]>;
+```
++ 打开/关闭通道
+```typescript
+public async openLight(lightIdx: number, channel: number, open: number);
+```
++ 设置通道亮度
+```typescript
+public async setLightness(lightIdx: number, channel: number, lightness: number);
+```
++ 设置通道触发方式
+```typescript
+public async setLightTrigger(lightIdx: number, channel: number, trigger: number);
+```
++ 设置通道发光时间
+```typescript
+public async setLightDelay(lightIdx: number, channel: number, time: number);
+```
+
+### 3. 示例
 ```typescript
 import { LightUtil } from "kl-light";
 
