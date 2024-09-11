@@ -3,7 +3,7 @@
 ### 1. 关键数据结构
 ```typescript
 interface LightConfig {
-  id: number; // 自定义id
+  id: number; // 自定义id，需唯一
   name: string; // 自定义名称
   ip: string; // 光源IP地址
   port: number; // 端口号
@@ -31,19 +31,19 @@ public async getLightList(): Promise<LightProp[]>;
 ```
 + 打开/关闭通道
 ```typescript
-public async openLight(lightIdx: number, channel: number, open: number);
+public async openLight(id: number, open: number); // 1 开 0 关
 ```
 + 设置通道亮度
 ```typescript
-public async setLightness(lightIdx: number, channel: number, lightness: number);
+public async setLightness(id: number, lightness: number); // 0~999
 ```
 + 设置通道触发方式
 ```typescript
-public async setLightTrigger(lightIdx: number, channel: number, trigger: number);
+public async setLightTrigger(id: number, trigger: number);
 ```
 + 设置通道发光时间
 ```typescript
-public async setLightDelay(lightIdx: number, channel: number, time: number);
+public async setLightDelay(id: number, time: number); // 1~999
 ```
 
 ### 3. 示例
@@ -62,7 +62,7 @@ const lightUtil = new LightUtil([
 ]);
 (async () => {
   for (let i = 0; i < 100; ++i) {
-    await lightUtil.setLightness(0, 2, i % 256);
+    await lightUtil.setLightness(id, i % 256);
   }
 })();
 ```

@@ -22,11 +22,11 @@ export class LightUtil {
     const configList = [];
     for (let light of this.lightList) {
       let config = await light.queryChannelConfig(light.channel);
-      const lightPropDTO = {
+      const lightProp = {
         ...light.lightConfig,
         ...config,
       } as LightProp;
-      configList.push(lightPropDTO);
+      configList.push(lightProp);
     }
     return configList;
   }
