@@ -11,7 +11,7 @@ interface LightConfig {
   id: number; // 自定义id
 }
 
-interface LightPropDTO {
+interface LightProp {
   ip: string;
   port: number;
   mask: string;
@@ -27,7 +27,7 @@ interface LightPropDTO {
 ### 2. API
 + 获取光源列表
 ```typescript
-public async getLightList(): Promise<LightPropDTO[]>;
+public async getLightList(): Promise<LightProp[]>;
 ```
 + 打开/关闭通道
 ```typescript

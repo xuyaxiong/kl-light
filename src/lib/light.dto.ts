@@ -1,15 +1,3 @@
-export interface LightPropDTO {
-  ip: string;
-  port: number;
-  mask: string;
-  channel: number;
-  name: string;
-  id: number;
-  L: number;
-  T: number;
-  F: number;
-}
-
 export interface LTF {
   L: number;
   T: number;
@@ -24,3 +12,5 @@ export interface LightConfig {
   mask: string;
   channel: number;
 }
+
+export interface LightProp extends LTF, LightConfig {}

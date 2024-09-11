@@ -1,18 +1,10 @@
 import * as dgram from "node:dgram";
 import { LightStatus, IdleStatus, TimeoutStatus } from "./light.status";
-import { LTF } from "./light.dto";
-
-export interface LightConfig {
-  ip: string;
-  port: number;
-  mask: string;
-  channel: number;
-  name: string;
-  id: number;
-}
+import { LTF, LightConfig } from "./light.dto";
+import Tools from "./light.tools";
+import { HEART_BEAT_STR } from "./constant";
 
 export class Light {
-  static HEART_BEAT_STR = "www.wordop.com\r\n\u0000";
   static TIMEOUT = 300; // 通信超时时间
   lightConfig: LightConfig;
   ip: string;
@@ -53,7 +45,7 @@ export class Light {
       this.status.queryAllConfig();
       await this.sleep();
       const resStr = this.status.getQueryMsg();
-      if (resStr) return this.parseAllConfig(resStr);
+      if (resStr) return Tools.parseAllConfig(resStr);
       else {
         this.setStatus(new TimeoutStatus(this));
         return null;
@@ -70,7 +62,7 @@ export class Light {
       this.status.queryChannelConfig(channel);
       await this.sleep();
       const resStr = this.status.getQueryMsg();
-      if (resStr) return this.parseChannelConfig(resStr);
+      if (resStr) return Tools.parseChannelConfig(resStr);
       else {
         this.setStatus(new TimeoutStatus(this));
         return null;
@@ -152,7 +144,7 @@ export class Light {
 
   // 监听消息
   onMessage(msg: string, address: string) {
-    if (msg === Light.HEART_BEAT_STR) {
+    if (msg === HEART_BEAT_STR) {
       // console.log('Udp heartbeat');
     } else {
       console.log(
@@ -215,53 +207,6 @@ export class Light {
         );
       }
     });
-  }
-
-  private parseAllConfig(
-    configStr: string = "$ID=0,L0=74,T0=100,F0=1,L1=0,T1=100,F1=1,L2=100,T2=100,F2=1,L3=100,T3=100,F3=1,TR=0,FQ=0,FI=0,LC=0,PW=0,NE=2,IP=192.168.1.2,IU=255.255.255.0,ALT11=1,IS=192.168.1.1,IL=1200,DP=192.168.1.3,DL=1200,MC=89438940348200D0#"
-  ) {
-    const channelConfigList: any[] = [];
-    const globalConfig = new Map<string, string>();
-    const trimConfigStr = configStr.slice(1, configStr.length - 1);
-    const configStrArray = trimConfigStr.split(",");
-    configStrArray.map((item) => {
-      const [key, val] = item.split("=");
-      const channelNum = Light.getChannelNum(key);
-      if (channelNum !== -1) {
-        const channelConfig = channelConfigList[channelNum];
-        if (channelConfig) channelConfig[key[0]] = val;
-        else {
-          channelConfigList[channelNum] = {};
-          channelConfigList[channelNum][key[0]] = val;
-        }
-      } else {
-        globalConfig.set(key, val);
-      }
-    });
-    return { channelConfigList, globalConfig };
-  }
-
-  private parseChannelConfig(configStr: string = "$L0=50,T0=100,F0=1#"): LTF {
-    const channelConfig = new Map<string, string>();
-    const trimConfigStr = configStr.slice(1, configStr.length - 1);
-    const configStrArray = trimConfigStr.split(",");
-    configStrArray.map((item) => {
-      const [key, val] = item.split("=");
-      channelConfig.set(key[0], val);
-    });
-    return channelConfig as unknown as LTF;
-  }
-
-  // 各通道私有的配置
-  private static PVT_KEY_PATTERN = [/^L\d$/, /^T\d$/, /^F\d$/];
-
-  private static isPvtKey(key: string): boolean {
-    return Light.PVT_KEY_PATTERN.some((pattern) => pattern.test(key));
-  }
-
-  private static getChannelNum(key: string): number {
-    if (Light.isPvtKey(key)) return Number(key.slice(1));
-    return -1;
   }
 
   private sleep(timeout: number = Light.TIMEOUT) {

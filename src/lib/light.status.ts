@@ -1,7 +1,5 @@
 import { Light } from "./light.implement";
-
-const OK = "+OK\u0000";
-
+import { OK } from "./constant";
 export interface LightStatus {
   queryAllConfig(): void;
   queryChannelConfig(channel?: number): void;

@@ -1,13 +1,12 @@
-import { Light, LightConfig } from "./light.implement";
+import { Light } from "./light.implement";
 import { LightStatus } from "./light.status";
-import { LightPropDTO } from "./light.dto";
+import { LightProp, LightConfig } from "./light.dto";
 
 export class LightUtil {
   private lightConfigList: LightConfig[];
   private lightList: Light[] = [];
 
   constructor(lightConfigList: LightConfig[]) {
- 
     this.lightConfigList = lightConfigList;
     this.initAll();
   }
@@ -21,14 +20,14 @@ export class LightUtil {
     }
   }
 
-  public async getLightList(): Promise<LightPropDTO[]> {
+  public async getLightList(): Promise<LightProp[]> {
     const configList = [];
     for (let light of this.lightList) {
       let config = await light.queryChannelConfig(light.channel);
       const lightPropDTO = {
         ...light.lightConfig,
         ...config,
-      } as LightPropDTO;
+      } as LightProp;
       configList.push(lightPropDTO);
     }
     return configList;
