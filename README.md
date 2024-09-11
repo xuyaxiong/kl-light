@@ -3,21 +3,21 @@
 ### 1. 关键数据结构
 ```typescript
 interface LightConfig {
+  id: number; // 自定义id
+  name: string; // 自定义名称
   ip: string; // 光源IP地址
   port: number; // 端口号
   mask: string; // 子网掩码
   channel: number; // 通道
-  name: string; // 自定义名称
-  id: number; // 自定义id
 }
 
 interface LightProp {
+  id: number;
+  name: string;
   ip: string;
   port: number;
   mask: string;
   channel: number;
-  name: string;
-  id: number;
   L: number; // 当前亮度
   T: number; // 当前发光时间
   F: number; // 通道开关 ON：1 OFF：0

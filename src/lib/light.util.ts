@@ -15,7 +15,6 @@ export class LightUtil {
     this.lightList = [];
     for (const lightConfig of this.lightConfigList) {
       const light = new Light(lightConfig);
-      light.init();
       this.lightList.push(light);
     }
   }
@@ -69,11 +68,6 @@ export class LightUtil {
   // 查询某光源指定通道配置
   public async queryChannelConfig(lightIdx: number, channel: number) {
     return await this.lightList[lightIdx].queryChannelConfig(channel);
-  }
-
-  // 查询状态
-  public getLightStatus(lightIdx: number): LightStatus {
-    return this.lightList[lightIdx].status;
   }
 
   public getIdxAndChannelById(id: number) {

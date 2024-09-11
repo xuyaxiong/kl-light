@@ -1,5 +1,5 @@
 import { Light } from "./light.implement";
-import { OK } from "./constant";
+import { MSG_OK } from "./constant";
 export interface LightStatus {
   queryAllConfig(): void;
   queryChannelConfig(channel?: number): void;
@@ -20,7 +20,7 @@ export class SettingUpStatus implements LightStatus {
   setLightTrigger(channel: number, trigger: number): void {}
 
   digestMsg(msg: string) {
-    if (msg === OK) {
+    if (msg === MSG_OK) {
       this.light.setStatus(new SetupCompletedStatus(this.light, msg));
     } else if (msg.startsWith("E")) {
       this.light.setStatus(new ErrorStatus(this.light, msg));
@@ -76,7 +76,7 @@ export class QueryingStatus implements LightStatus {
   digestMsg(msg: string) {
     if (msg.startsWith("E")) {
       this.light.setStatus(new ErrorStatus(this.light, msg));
-    } else if (msg !== OK) {
+    } else if (msg !== MSG_OK) {
       this.light.setStatus(new QueryCompletedStatus(this.light, msg));
     }
   }

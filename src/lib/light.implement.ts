@@ -2,19 +2,19 @@ import * as dgram from "node:dgram";
 import { LightStatus, IdleStatus, TimeoutStatus } from "./light.status";
 import { LTF, LightConfig } from "./light.dto";
 import Tools from "./light.tools";
-import { HEART_BEAT_STR } from "./constant";
+import { MSG_HEART_BEAT_STR } from "./constant";
 
 export class Light {
   static TIMEOUT = 300; // 通信超时时间
-  lightConfig: LightConfig;
-  ip: string;
-  port: number;
-  channel: number;
-  mask: string;
-  name: string;
-  id: number;
-  client!: dgram.Socket;
-  status!: LightStatus;
+  public readonly lightConfig: LightConfig;
+  public readonly id: number;
+  public readonly name: string;
+  public readonly ip: string;
+  public readonly port: number;
+  public readonly mask: string;
+  public readonly channel: number;
+  private client!: dgram.Socket;
+  public status!: LightStatus;
 
   constructor(lightConfig: LightConfig) {
     this.lightConfig = lightConfig;
@@ -32,7 +32,7 @@ export class Light {
   }
 
   // 初始化
-  async init() {
+  private async init() {
     // 创建udp服务
     this.createUdpServer();
     this.status = new IdleStatus(this);
@@ -40,111 +40,85 @@ export class Light {
   }
 
   // 查询所有配置
-  async queryAllConfig() {
-    try {
-      this.status.queryAllConfig();
-      await this.sleep();
-      const resStr = this.status.getQueryMsg();
-      if (resStr) return Tools.parseAllConfig(resStr);
-      else {
-        this.setStatus(new TimeoutStatus(this));
-        return null;
+  public async queryAllConfig() {
+    return await this.operateWrapper(
+      () => {
+        this.status.queryAllConfig();
+      },
+      (res: string) => {
+        return Tools.parseAllConfig(res);
       }
-    } catch (error: any) {
-      console.log(error.message);
-      return null;
-    }
+    )(null, null);
   }
 
   // 查询某通道配置
-  async queryChannelConfig(channel: number): Promise<LTF | null> {
-    try {
-      this.status.queryChannelConfig(channel);
-      await this.sleep();
-      const resStr = this.status.getQueryMsg();
-      if (resStr) return Tools.parseChannelConfig(resStr);
-      else {
-        this.setStatus(new TimeoutStatus(this));
-        return null;
+  public async queryChannelConfig(channel: number): Promise<LTF | null> {
+    return await this.operateWrapper(
+      () => {
+        this.status.queryChannelConfig(channel);
+      },
+      (res: string) => {
+        return Tools.parseChannelConfig(res);
       }
-    } catch (error: any) {
-      console.log(error.message);
-      return null;
-    }
+    )(channel, null);
   }
 
   // 打开/关闭光源
-  async openLight(channel: number, open: number) {
-    try {
+  public async openLight(channel: number, open: number) {
+    await this.operateWrapper(() => {
       this.status.openLight(channel, open);
-      await this.sleep();
-      const res = this.status.getSetupMsg();
-      if (!res) {
-        this.setStatus(new TimeoutStatus(this));
-      }
-      return res;
-    } catch (error: any) {
-      console.log(error.message);
-      return null;
-    }
+    })(channel, open);
   }
 
   // 设置亮度
-  async setLightness(channel: number, lightness: number) {
-    try {
+  public async setLightness(channel: number, lightness: number) {
+    await this.operateWrapper(() => {
       this.status.setChannelLightness(channel, lightness);
-      await this.sleep();
-      const res = this.status.getSetupMsg();
-      if (!res) {
-        this.setStatus(new TimeoutStatus(this));
-      }
-      return res;
-    } catch (error: any) {
-      console.log(error.message);
-      return null;
-    }
+    })(channel, lightness);
   }
 
   // 设置触发方式
-  async setLightTrigger(channel: number, trigger: number) {
-    try {
+  public async setLightTrigger(channel: number, trigger: number) {
+    await this.operateWrapper(() => {
       this.status.setLightTrigger(channel, trigger);
-      await this.sleep();
-      const res = this.status.getSetupMsg();
-      if (!res) {
-        this.setStatus(new TimeoutStatus(this));
-      }
-      return res;
-    } catch (error: any) {
-      console.log(error.message);
-      return null;
-    }
+    })(channel, trigger);
   }
 
   // 设置发光时间
-  async setLightDelay(channel: number, time: number) {
-    try {
+  public async setLightDelay(channel: number, time: number) {
+    await this.operateWrapper(() => {
       this.status.setLightDelay(channel, time);
-      await this.sleep();
-      const res = this.status.getSetupMsg();
-      if (!res) {
-        this.setStatus(new TimeoutStatus(this));
+    })(channel, time);
+  }
+
+  private operateWrapper(operate: Function, dealRes?: Function) {
+    return async (param1: number | null, param2: number | null) => {
+      try {
+        operate(param1, param2);
+        await this.sleep();
+        const res = this.status.getSetupMsg();
+        if (!res) {
+          this.setStatus(new TimeoutStatus(this));
+        } else {
+          if (dealRes) {
+            return dealRes(res);
+          }
+        }
+      } catch (error: any) {
+        console.log(error.message);
+        return null;
       }
-      return res;
-    } catch (error: any) {
-      console.log(error.message);
-      return null;
-    }
+    };
   }
 
   // 关闭服务
-  close() {
+  public close() {
     this.client.close();
   }
 
   // 监听消息
-  onMessage(msg: string, address: string) {
-    if (msg === HEART_BEAT_STR) {
+  private onMessage(msg: string, address: string) {
+    if (msg === MSG_HEART_BEAT_STR) {
       // console.log('Udp heartbeat');
     } else {
       console.log(
@@ -155,27 +129,38 @@ export class Light {
   }
 
   _queryAllConfig() {
-    this.send(0, `RD=9999`);
+    const action = `RD=9999`;
+    const strToSend = `$${action}#`;
+    this.send(strToSend);
   }
 
   _queryChannelConfig(channel: number) {
-    this.send(0, `RD=${channel}`);
+    const action = `RD=${channel}`;
+    const strToSend = `$${action}#`;
+    this.send(strToSend);
   }
 
   _setChannelLightness(channel: number, lightness: number) {
-    this.send(0, `L${channel}=${lightness}`);
+    const ch = `000`;
+    const action = `L${channel}=${lightness}`;
+    const strToSend = `$ID=${ch},${action}#`;
+    this.send(strToSend);
   }
 
   _setLightTrigger(channel: number, trigger: number) {
-    this.send(channel, `TR=${trigger}`);
+    const action = `TR=${trigger}`;
+    const strToSend = `$${action}#`;
+    this.send(strToSend);
   }
 
   _setLightDelay(channel: number, time: number) {
-    this.send(0, `T${channel}=${time}`);
+    const action = `T${channel}=${time}`;
+    const strToSend = `$${action}#`;
+    this.send(strToSend);
   }
 
   _openLight(channel: number, open: number) {
-    this.send(0, `F${channel}=${open}`);
+    this.send(`F${channel}=${open}`);
   }
 
   // 创建UDP服务
@@ -189,22 +174,14 @@ export class Light {
   }
 
   // 发送指令
-  private send(channel: number, action: string) {
+  private send(strToSend: string) {
     return new Promise(async (resolve, reject) => {
       if (null != this.client) {
-        const ch = `00${Number(channel).toString()}`;
-        console.log(
-          `light controller: send $ID=${ch},${action}# to ${this.ip}`
-        );
-        this.client.send(
-          `$ID=${ch},${action}#`,
-          this.port,
-          this.ip,
-          (err, data) => {
-            if (err) reject(false);
-            else resolve(true);
-          }
-        );
+        console.log(`light controller: send ${strToSend} to ${this.ip}`);
+        this.client.send(strToSend, this.port, this.ip, (err, data) => {
+          if (err) reject(false);
+          else resolve(true);
+        });
       }
     });
   }
