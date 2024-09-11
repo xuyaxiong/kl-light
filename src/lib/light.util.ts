@@ -1,5 +1,4 @@
 import { Light } from "./light.implement";
-import { LightStatus } from "./light.status";
 import { LightProp, LightConfig } from "./light.dto";
 
 export class LightUtil {
@@ -33,49 +32,47 @@ export class LightUtil {
   }
 
   // 打开/关闭光源
-  public async openLight(lightIdx: number, channel: number, open: number) {
-    return this.lightList[lightIdx].openLight(channel, open);
+  public async openLight(id: number, open: number) {
+    const { idx, channel } = this.getIdxAndChannelById(id);
+    return this.lightList[idx].openLight(channel, open);
   }
 
   // 设置亮度
-  public async setLightness(
-    lightIdx: number,
-    channel: number,
-    lightness: number
-  ) {
-    return this.lightList[lightIdx].setLightness(channel, lightness);
+  public async setLightness(id: number, lightness: number) {
+    const { idx, channel } = this.getIdxAndChannelById(id);
+    return this.lightList[idx].setLightness(channel, lightness);
   }
 
   // 设置触发方式
-  public async setLightTrigger(
-    lightIdx: number,
-    channel: number,
-    trigger: number
-  ) {
-    return this.lightList[lightIdx].setLightTrigger(channel, trigger);
+  public async setLightTrigger(id: number, trigger: number) {
+    const { idx, channel } = this.getIdxAndChannelById(id);
+    return this.lightList[idx].setLightTrigger(channel, trigger);
   }
 
   // 设置发光时间
-  public async setLightDelay(lightIdx: number, channel: number, time: number) {
-    return this.lightList[lightIdx].setLightDelay(channel, time);
+  public async setLightDelay(id: number, time: number) {
+    const { idx, channel } = this.getIdxAndChannelById(id);
+    return this.lightList[idx].setLightDelay(channel, time);
   }
 
   // 查询某光源所有配置
-  public async queryAllConfig(lightIdx: number) {
-    return await this.lightList[lightIdx].queryAllConfig();
+  public async queryAllConfig(id: number) {
+    const { idx, channel } = this.getIdxAndChannelById(id);
+    return await this.lightList[idx].queryAllConfig();
   }
 
   // 查询某光源指定通道配置
-  public async queryChannelConfig(lightIdx: number, channel: number) {
-    return await this.lightList[lightIdx].queryChannelConfig(channel);
+  public async queryChannelConfig(id: number) {
+    const { idx, channel } = this.getIdxAndChannelById(id);
+    return await this.lightList[idx].queryChannelConfig(channel);
   }
 
-  public getIdxAndChannelById(id: number) {
+  private getIdxAndChannelById(id: number) {
     for (let [idx, light] of this.lightList.entries()) {
       if (light.id === id) {
         return { idx, channel: light.channel };
       }
     }
-    throw new Error("光源不存在");
+    throw new Error(`id为${id}的光源不存在，请检查配置`);
   }
 }

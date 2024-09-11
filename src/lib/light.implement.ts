@@ -3,6 +3,7 @@ import { LightStatus, IdleStatus, TimeoutStatus } from "./light.status";
 import { LTF, LightConfig } from "./light.dto";
 import Tools from "./light.tools";
 import { MSG_HEART_BEAT_STR } from "./constant";
+import LightIns from "./light.ins";
 
 export class Light {
   static TIMEOUT = 300; // 通信超时时间
@@ -32,11 +33,10 @@ export class Light {
   }
 
   // 初始化
-  private async init() {
+  private init() {
     // 创建udp服务
     this.createUdpServer();
     this.status = new IdleStatus(this);
-    await this.sleep();
   }
 
   // 查询所有配置
@@ -129,38 +129,27 @@ export class Light {
   }
 
   _queryAllConfig() {
-    const action = `RD=9999`;
-    const strToSend = `$${action}#`;
-    this.send(strToSend);
+    this.send(LightIns.getQueryAllConfigIns());
   }
 
   _queryChannelConfig(channel: number) {
-    const action = `RD=${channel}`;
-    const strToSend = `$${action}#`;
-    this.send(strToSend);
+    this.send(LightIns.getQueryChannelConfigIns(channel));
   }
 
   _setChannelLightness(channel: number, lightness: number) {
-    const ch = `000`;
-    const action = `L${channel}=${lightness}`;
-    const strToSend = `$ID=${ch},${action}#`;
-    this.send(strToSend);
+    this.send(LightIns.getSetChannelLightnessIns(channel, lightness));
   }
 
   _setLightTrigger(channel: number, trigger: number) {
-    const action = `TR=${trigger}`;
-    const strToSend = `$${action}#`;
-    this.send(strToSend);
+    this.send(LightIns.getSetLightTriggerIns(channel, trigger));
   }
 
   _setLightDelay(channel: number, time: number) {
-    const action = `T${channel}=${time}`;
-    const strToSend = `$${action}#`;
-    this.send(strToSend);
+    this.send(LightIns.getSetLightDelayIns(channel, time));
   }
 
   _openLight(channel: number, open: number) {
-    this.send(`F${channel}=${open}`);
+    this.send(LightIns.getOpenLightIns(channel, open));
   }
 
   // 创建UDP服务
